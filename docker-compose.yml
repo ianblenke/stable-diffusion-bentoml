@@ -1,0 +1,40 @@
+version: "2.1"
+
+networks:
+  default:
+    driver: bridge
+
+services:
+  stable_diffusion:
+    image: stable_diffusion_bentoml
+    build: .
+    privileged: True
+    runtime: nvidia
+    container_name: stable_diffusion_bentoml
+    hostname: stable_diffusion_bentoml
+    environment:
+      HOSTNAME: stable_diffusion_bentoml
+      NVIDIA_VISIBLE_DEVICES: ALL
+    ipc: host
+    devices:
+    - /dev/dri:/dev/dri
+    volumes:
+    - ./fp32/models:/stable-diffusion-bentoml/models/
+    shm_size: 1G
+    stdin_open: true
+    tty: true
+    ports:
+    - "3000:3000"
+    ulimits:
+      memlock: -1
+      stack: 67108864
+    restart: unless-stopped
+    networks:
+    - default
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [gpu,video]
+              count: all
